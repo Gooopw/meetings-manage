@@ -4,19 +4,19 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
 const Login = ({ onLogin }) => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = (event) => {
     event.preventDefault();
-    // 简单的邮箱和密码验证
-    if (email === "admin" && password === "123456") {
+    // 简单的用户名和密码验证
+    if (username === "admin" && password === "123456") {
       onLogin(); // 调用 onLogin 函数来改变登录状态
       navigate("/"); // 登录成功后导航到首页
     } else {
-      setError("邮箱或密码错误");
+      setError("用户名或密码错误");
     }
   };
 
@@ -33,13 +33,13 @@ const Login = ({ onLogin }) => {
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="邮箱"
-            name="email"
-            autoComplete="email"
+            id="username"
+            label="用户名"
+            name="username"
+            autoComplete="username"
             autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <TextField
             variant="outlined"
