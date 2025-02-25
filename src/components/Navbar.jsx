@@ -24,7 +24,7 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="fixed">
+    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar>
         <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
         <Typography
@@ -33,7 +33,7 @@ const Navbar = () => {
           component="div"
           sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
         >
-          Meetings Management System
+          Meeting Room Booking System
         </Typography>
         <Box sx={{ flexGrow: 0 }}>
           <Tooltip title="Open settings">

@@ -43,10 +43,13 @@ const App = () => {
               >
                 <Navbar />
                 <Container
-                  maxWidth="lg"
+                  maxWidth={false} // 不限制最大宽度，容器将占满可用宽度
                   style={{
                     paddingTop: "64px",
                     flexGrow: 1, // 使容器扩展以填充剩余空间
+                    paddingLeft: "20px", // 给内容一些左边距，避免紧挨侧边栏
+                    paddingRight: "20px", // 右边距
+                    width: "100%", // 让容器的宽度占满父元素
                   }}
                 >
                   <Routes>
