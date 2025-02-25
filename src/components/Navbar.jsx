@@ -32,7 +32,7 @@ const Navbar = () => {
           component="div"
           sx={{ flexGrow: 1,ml:4, display: { xs: "none", sm: "block" } }}
         >
-          Meeting Room Booking System
+          Meeting Rooms Booking System
         </Typography>
         <Box sx={{ flexGrow: 0 }}>
           <Tooltip title="Open settings">
