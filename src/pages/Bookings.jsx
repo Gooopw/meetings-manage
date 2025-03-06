@@ -107,7 +107,7 @@ const Bookings = () => {
         backgroundColor,
         color: "white",
         borderRadius: "5px",
-        padding: "0px"
+        padding: "0px",
         // padding: "2px 5px",
         display: "flex",
         alignItems: "center",
