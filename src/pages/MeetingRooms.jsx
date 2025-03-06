@@ -1,37 +1,25 @@
-import { useState } from "react";
+import { useState,useEffect  } from "react";
 import {
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Typography,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Box,
+  Typography,
+  Paper,
+  IconButton,
   InputBase,
 } from "@mui/material";
-import { Add, Edit, Delete,Save,Cancel } from "@mui/icons-material";
-import SearchIcon from "@mui/icons-material/Search";
-import DeleteIcon from "@mui/icons-material/Delete";
-import DialogBox from "../components/DialogBox";
+import { Add,Search } from "@mui/icons-material";
+import Pagination from "../components/Pagination";
+import TableList from "../components/TableList";
+import DialogForm from "../components/DialogForm";
 import AlertBox from "../components/AlertBox";
-import mockMeetingRooms from "../assets/data/mockMeetingRooms";
+import "../assets/styles/meetingRooms.css";
+import { fetchRooms, addRoom, updateRoom, deleteRoom } from "../services/meetingRoomsService";
 
 const MeetingRooms = () => {
-  const [rooms, setRooms] = useState(mockMeetingRooms);
-  const [openEditRoom, setOpenEditRoom] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false); 
-  const [deleteRoom, setDeleteRoom] = useState(null); 
-  const [deleteAlert, setDeleteAlert] = useState({ open: false, message: "", severity: "" });
-  const [editRoom, setEditRoom] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [formValues, setFormValues] = useState({
     name: "",
     capacity: "",
@@ -39,22 +27,58 @@ const MeetingRooms = () => {
     description: "",
     location: "",
   });
-  const [searchTerm, setSearchTerm] = useState(""); // 搜索关键词
+  const [editRoom, setEditRoom] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [error, setError] = useState(null);
 
-  // 打开/关闭对话框
+  const columns = ["Name", "Capacity", "Devices", "Description", "Location"];
+
+  // 获取会议室数据
+  const loadRooms = async () => {
+    try {
+      const data = await fetchRooms();
+      console.log("data:");
+      console.log(data);
+      setRooms(data);  // 设置获取到的数据
+    } catch (error) {
+      setError("Failed to load rooms:"+error);
+    }
+  };
+
+  useEffect(() => {
+    loadRooms();
+  }, []);
+
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
+
+  const handleSearch = () => {
+    const filteredRooms = rooms.filter((room) =>
+      room.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setRooms(filteredRooms);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearch();
+    }
+  };
+
+  const handlePageChange = (_, newPage) => setPage(newPage);
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const handleDialogOpen = (room = null) => {
     setEditRoom(room);
-    setFormValues(
-      room
-        ? { ...room }
-        : { name: "", capacity: "", devices: "", description: "", location: "" }
-    );
-    setOpenEditRoom(true);
+    setFormValues(room ? { ...room } : { name: "", capacity: "", devices: "", description: "", location: "" });
+    setOpenDialog(true);
   };
 
-  const handleDialogClose = () => {
-    setOpenEditRoom(false);
-  };
+  const handleDialogClose = () => setOpenDialog(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -64,225 +88,79 @@ const MeetingRooms = () => {
     }));
   };
 
-  // 提交表单
-  const handleSubmit = () => {
-    if (editRoom) {
-      // 编辑会议室
-      setRooms((prev) =>
-        prev.map((room) =>
-          room.id === editRoom.id ? { ...editRoom, ...formValues } : room
-        )
-      );
-    } else {
-      // 新增会议室
-      const newRoom = {
-        id: rooms.length + 1,
-        ...formValues,
-      };
-      setRooms((prev) => [...prev, newRoom]);
+  const handleSubmit = async () => {
+    try {
+      let updatedRoom;
+      if (editRoom) {
+        updatedRoom = await updateRoom(editRoom.id, formValues);
+      } else {
+        updatedRoom = await addRoom(formValues);
+      }
+      setRooms((prev) => [...prev, updatedRoom]);
+      handleDialogClose();
+    } catch (error) {
+      setError("Failed to save room:"+error);
     }
-    handleDialogClose();
   };
 
-// 删除会议室
-const handleDelete = (id) => {
-  setRooms((prev) => prev.filter((room) => room.id !== id));
-  setOpenDeleteDialog(false);
-
-  setDeleteAlert({
-    open: true,
-    message: "会议室删除成功！",
-    severity: "success",
-  });
-};
-
-const handleDeleteDialogOpen = (room) => {
-  setOpenDeleteDialog(true);
-  setDeleteRoom(room);
-};
-
-const handleDeleteDialogClose = () => {
-  setOpenDeleteDialog(false);
-};
-
-const handleDeleteAlertClose = () => {
-  setDeleteAlert((prev) => ({ ...prev, open: false }));
-};
-
-  // 处理搜索输入变化
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  // 搜索处理函数
-  const handleSearch = () => {
-    if (searchTerm === "") {
-      setRooms(mockMeetingRooms);
-      return;
+  const handleDelete = async (roomId) => {
+    try {
+      await deleteRoom(roomId);
+      setRooms(rooms.filter((room) => room.id !== roomId));
+    } catch (error) {
+      setError("Failed to delete room:"+error);
     }
-    const filteredRooms = mockMeetingRooms.filter((room) =>
-      room.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    setRooms(filteredRooms); // 更新显示的会议室列表
-
   };
 
   return (
-    <div style={{ marginLeft: "20px", marginRight: "20px" }}>
-      <div
-        style={{ textAlign: "center", marginBottom: "20px", marginTop: "20px" }}
-      >
-        <Typography variant="h5" gutterBottom>
-          会议室管理
-        </Typography>
-      </div>
-
+    <div className="meeting-rooms">
+      <Typography variant="h5" gutterBottom>
+        会议室管理
+      </Typography>
       <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom="10px">
-        {/* Add Button */}
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Add />}
-          onClick={() => handleDialogOpen()}
-        >
+        <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => handleDialogOpen()}>
           新增
         </Button>
 
-        {/* Search Input */}
-        <Paper
-          component="form"
-          sx={{
-            p: "2px 4px",
-            display: "flex",
-            alignItems: "center",
-            width: 400,
-          }}
-        >
+        <Paper component="form" sx={{ p: "2px 4px", display: "flex", alignItems: "center", width: 400 }}>
           <InputBase
             sx={{ ml: 1, flex: 1 }}
             placeholder="搜索会议室"
-            aria-label="搜索会议室"
-            value={searchTerm}  
-            onChange={handleSearchChange}  
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onKeyDown={handleKeyDown}
           />
-          <IconButton type="button" sx={{ p: "10px" }} aria-label="search" onClick={handleSearch} >
-            <SearchIcon />
+          <IconButton type="button" sx={{ p: "10px" }} onClick={handleSearch}>
+            <Search />
           </IconButton>
         </Paper>
       </Box>
 
-      {/* Table */}
-      <TableContainer component={Paper} sx={{ width: "100%" }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>名称</TableCell>
-              <TableCell>容量</TableCell>
-              <TableCell>设备</TableCell>
-              <TableCell>描述</TableCell>
-              <TableCell>位置</TableCell>
-              <TableCell>操作</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rooms.map((room) => (
-              <TableRow key={room.id}>
-                <TableCell>{room.name}</TableCell>
-                <TableCell>{room.capacity}</TableCell>
-                <TableCell>{room.devices}</TableCell>
-                <TableCell>{room.description}</TableCell>
-                <TableCell>{room.location}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleDialogOpen(room)}>
-                    <Edit color="primary" />
-                  </IconButton>
-                  <IconButton onClick={() => handleDeleteDialogOpen(room)}>
-                    <Delete color="error" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* 删除确认对话框 */}
-      <DialogBox
-        open={openDeleteDialog}
-        onClose={handleDeleteDialogClose}
-        onConfirm={() => handleDelete(deleteRoom?.id)}
-        title="确认删除"
-        message={`您确定要删除会议室：${deleteRoom?.name} 吗？`}
-        confirmText="删除"
-        cancelText="取消"
-        confirmIcon={<DeleteIcon />}
-        cancelIcon={<Cancel />}
+      <TableList
+        rows={rooms.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+        columns={columns}
+        onEdit={handleDialogOpen}
+        onDelete={handleDelete}
       />
 
-      {/* 删除成功提示 */}
-      <AlertBox
-        open={deleteAlert.open}
-        onClose={handleDeleteAlertClose}
-        message={deleteAlert.message}
-        severity={deleteAlert.severity}
+      <Pagination
+        count={rooms.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
       />
 
-      {/* Dialog for Add/Edit */}
-      <Dialog open={openEditRoom} onClose={handleDialogClose}>
-        <DialogTitle>{editRoom ? "编辑" : "新增"}</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="会议室名称"
-            fullWidth
-            name="name"
-            value={formValues.name}
-            onChange={handleInputChange}
-            style={{ marginBottom: "15px" }}
-          />
-          <TextField
-            label="会议室容量"
-            fullWidth
-            name="capacity"
-            type="number"
-            value={formValues.capacity}
-            onChange={handleInputChange}
-            style={{ marginBottom: "15px" }}
-          />
-          <TextField
-            label="所在位置"
-            fullWidth
-            name="location"
-            value={formValues.location}
-            onChange={handleInputChange}
-            style={{ marginBottom: "15px" }}
-          />
-          <TextField
-            label="会议室设备"
-            fullWidth
-            name="devices"
-            value={formValues.devices}
-            onChange={handleInputChange}
-            style={{ marginBottom: "15px" }}
-          />
-          <TextField
-            label="会议室描述"
-            fullWidth
-            name="description"
-            value={formValues.description}
-            onChange={handleInputChange}
-            style={{ marginBottom: "15px" }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button  onClick={handleDialogClose} color="secondary" variant="contained" startIcon={<Cancel />} >
-            取消
-          </Button>
-          <Button onClick={handleSubmit} color="primary" variant="contained" startIcon={<Save />}>
-            保存
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DialogForm
+        open={openDialog}
+        onClose={handleDialogClose}
+        onSubmit={handleSubmit}
+        formValues={formValues}
+        onChange={handleInputChange}
+        title={editRoom ? "编辑会议室" : "新增会议室"}
+      />
+
+      <AlertBox open={error !== null} onClose={() => setError(null)} message={error} severity="error" />
     </div>
   );
 };
