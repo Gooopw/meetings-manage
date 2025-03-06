@@ -109,10 +109,6 @@ const Bookings = () => {
         borderRadius: "5px",
         padding: "0px",
         // padding: "2px 5px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center"
       }
     };
   };
@@ -142,10 +138,11 @@ const Bookings = () => {
         //eventLimit={3}
         startAccessor="start"
         endAccessor="end"
-        selectable
+        //selectable
         //showMultiDayTimes
         //dayLayoutAlgorithm="no-overlap"
         //allDayMaxRows={2}
+        //popup
         style={{ height: 1100 }}
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
