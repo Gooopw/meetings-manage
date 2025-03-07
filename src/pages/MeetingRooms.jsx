@@ -37,8 +37,6 @@ const MeetingRooms = () => {
   const loadRooms = async () => {
     try {
       const data = await fetchRooms();
-      console.log("data:");
-      console.log(data);
       setRooms(data);  // 设置获取到的数据
     } catch (error) {
       setError("Failed to load rooms:"+error);

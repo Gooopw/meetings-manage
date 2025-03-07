@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Tooltip, MenuItem, Select, IconButton } from "@mui/material";
+import AlertBox from "../components/AlertBox";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import zhCN from "date-fns/locale/zh-CN";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { fetchBookings } from "../services/bookingService";
 
 const locales = { "zh-CN": zhCN };
 const localizer = dateFnsLocalizer({
@@ -17,63 +19,27 @@ const localizer = dateFnsLocalizer({
 });
 
 const Bookings = () => {
-  const [events, setEvents] = useState([
-    {
-      title: "Project Kickoff",
-      start: new Date(2025, 2, 10, 10, 0),
-      end: new Date(2025, 2, 10, 11, 0),
-      room: "Room A",
-      description: "Discuss project scope and deliverables."
-    },
-    {
-      title: "Project Research",
-      start: new Date(2025, 2, 10, 12, 0),
-      end: new Date(2025, 2, 10, 13, 0),
-      room: "Room A",
-      description: "Discuss project scope and deliverables."
-    },
-    {
-      title: "需求讨论会",
-      start: new Date(2025, 2, 10, 10, 0),
-      end: new Date(2025, 2, 10, 11, 0),
-      room: "Room A",
-      description: "Discuss project scope and deliverables."
-    },
-    {
-      title: "Project Research2",
-      start: new Date(2025, 2, 10, 13, 0),
-      end: new Date(2025, 2, 10, 14, 0),
-      room: "Room A",
-      description: "Discuss project scope and deliverables."
-    },
-    {
-      title: "Project Research3",
-      start: new Date(2025, 2, 10, 14, 0),
-      end: new Date(2025, 2, 10, 15, 0),
-      room: "Room A",
-      description: "Discuss project scope and deliverables."
-    },
-    {
-      title: "Project Research4",
-      start: new Date(2025, 2, 10, 15, 0),
-      end: new Date(2025, 2, 10, 16, 0),
-      room: "Room A",
-      description: "Discuss project scope and deliverables."
-    },
-    {
-      title: "需求讨论会",
-      start: new Date(2025, 2, 11, 10, 0),
-      end: new Date(2025, 2, 11, 11, 0),
-      room: "Room B",
-      description: "Discuss project scope and deliverables."
-    }
-  ]);
+  const [events, setEvents] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEvent, setNewEvent] = useState({ title: "", start: new Date(), end: new Date(), room: "", description: "" });
   const [filterRoom, setFilterRoom] = useState("");
+  const [error, setError] = useState(null);
 
+  // 获取预约数据
+  const loadBookings = async () => {
+    try {
+      const data = await fetchBookings();
+      setEvents(data);  // 设置获取到的数据
+    } catch (error) {
+      setError("Failed to load rooms:"+error);
+    }
+  };
+
+  useEffect(() => {
+    loadBookings();
+  }, []);
   const handleSelectSlot = ({ start, end }) => {
     setEditMode(false);
     setNewEvent({ title: "", start, end, room: "", description: "" });
@@ -176,7 +142,9 @@ const Bookings = () => {
           <Button onClick={handleSaveEvent} variant="contained" color="primary">{editMode ? "保存" : "添加"}</Button>
         </DialogActions>
       </Dialog>
+      <AlertBox open={error !== null} onClose={() => setError(null)} message={error} severity="error" />
     </Box>
+    
   );
 };
 
