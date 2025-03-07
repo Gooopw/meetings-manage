@@ -21,7 +21,7 @@ const MeetingRooms = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [formValues, setFormValues] = useState({
-    name: "",
+    title: "",
     capacity: "",
     devices: "",
     description: "",
@@ -31,7 +31,7 @@ const MeetingRooms = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [error, setError] = useState(null);
 
-  const columns = ["Name", "Capacity", "Devices", "Description", "Location"];
+  const columns = ["Title", "Capacity", "Devices", "Description", "Location"];
 
   // 获取会议室数据
   const loadRooms = async () => {
@@ -51,7 +51,7 @@ const MeetingRooms = () => {
 
   const handleSearch = () => {
     const filteredRooms = rooms.filter((room) =>
-      room.name.toLowerCase().includes(searchTerm.toLowerCase())
+      room.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setRooms(filteredRooms);
   };
@@ -72,17 +72,17 @@ const MeetingRooms = () => {
 
   const handleDialogOpen = (room = null) => {
     setEditRoom(room);
-    setFormValues(room ? { ...room } : { name: "", capacity: "", devices: "", description: "", location: "" });
+    setFormValues(room ? { ...room } : { title: "", capacity: "", devices: "", description: "", location: "" });
     setOpenDialog(true);
   };
 
   const handleDialogClose = () => setOpenDialog(false);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { title, value } = e.target;
     setFormValues((prev) => ({
       ...prev,
-      [name]: value,
+      [title]: value,
     }));
   };
 
