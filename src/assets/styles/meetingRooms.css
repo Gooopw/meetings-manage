@@ -1,0 +1,9 @@
+.meeting-rooms {
+    padding: 20px;
+  }
+  
+  .meeting-rooms .MuiTypography-h5 {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  

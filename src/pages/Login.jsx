@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
 const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("123456");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
