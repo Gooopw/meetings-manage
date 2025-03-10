@@ -159,8 +159,8 @@ const Bookings = () => {
         localizer={localizer}
         events={filteredEvents}
         //eventLimit={3}
-        //startAccessor="start"
-        //endAccessor="end"
+        startAccessor="start"
+        endAccessor="end"
         messages={messages}
         formats={formats}
         resources={rooms}
