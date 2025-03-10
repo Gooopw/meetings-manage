@@ -120,6 +120,8 @@ const Bookings = () => {
         showMore: (total) => `+${total} 显示更多`,
       },
       formats: {
+        timeGutterFormat: (date, culture, localizer) =>
+          localizer.format(date, 'HH:mm', culture),
         monthHeaderFormat: (date, culture, localizer) =>
           localizer.format(date, `yyyy 年 MM 月`, culture),
         dayRangeHeaderFormat: ({ start, end }, culture, localizer) =>
@@ -132,7 +134,6 @@ const Bookings = () => {
           localizer.format(start, 'yyyy年MM月dd日', culture) + ' - ' + localizer.format(end, 'yyyy年MM月dd日', culture),
         agendaDateFormat: (date, culture, localizer) =>
           localizer.format(date, 'MM月dd日 eeee', culture),
-
       },
     }),
     []
