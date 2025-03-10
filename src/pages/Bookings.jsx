@@ -29,19 +29,19 @@ const Bookings = () => {
   const [filterRoom, setFilterRoom] = useState("");
   const [error, setError] = useState(null);
 
-    // 获取会议室数据
-    const loadRooms = async () => {
-      try {
-        const data = await fetchRooms();
-        setRooms(data);  // 设置获取到的数据
-      } catch (error) {
-        setError("Failed to load rooms:"+error);
-      }
-    };
-  
-    useEffect(() => {
-      loadRooms();
-    }, []);
+  // 获取会议室数据
+  const loadRooms = async () => {
+    try {
+      const data = await fetchRooms();
+      setRooms(data);  // 设置获取到的数据
+    } catch (error) {
+      setError("Failed to load rooms:"+error);
+    }
+  };
+
+  useEffect(() => {
+    loadRooms();
+  }, []);
 
   // 获取预约数据
   const loadBookings = async () => {
@@ -123,11 +123,16 @@ const Bookings = () => {
         monthHeaderFormat: (date, culture, localizer) =>
           localizer.format(date, `yyyy 年 MM 月`, culture),
         dayRangeHeaderFormat: ({ start, end }, culture, localizer) =>
-            localizer.format(start, 'yyyy年MM月dd日', culture) + ' - ' + localizer.format(end, 'yyyy年MM月dd日', culture),
+          localizer.format(start, 'yyyy年MM月dd日', culture) + ' - ' + localizer.format(end, 'yyyy年MM月dd日', culture),
         dayHeaderFormat: (date, culture, localizer) =>
           localizer.format(date, 'yyyy年MM月dd日 eeee', culture),
         agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
           localizer.format(start, 'HH:mm', culture) +' - ' + localizer.format(end, 'HH:mm', culture),
+        agendaHeaderFormat: ({ start, end }, culture, localizer) =>
+          localizer.format(start, 'yyyy年MM月dd日', culture) + ' - ' + localizer.format(end, 'yyyy年MM月dd日', culture),
+        agendaDateFormat: (date, culture, localizer) =>
+          localizer.format(date, 'MM月dd日 eeee', culture),
+
       },
     }),
     []
@@ -154,8 +159,8 @@ const Bookings = () => {
         localizer={localizer}
         events={filteredEvents}
         //eventLimit={3}
-        startAccessor="start"
-        endAccessor="end"
+        //startAccessor="start"
+        //endAccessor="end"
         messages={messages}
         formats={formats}
         resources={rooms}
