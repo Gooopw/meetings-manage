@@ -12,6 +12,7 @@ import Pagination from "../components/Pagination";
 import TableList from "../components/TableList";
 import DialogForm from "../components/DialogForm";
 import AlertBox from "../components/AlertBox";
+import { toast } from 'sonner';
 import "../assets/styles/meetingRooms.css";
 import { fetchRooms, addRoom, updateRoom, deleteRoom } from "../services/meetingRoomsService";
 
@@ -40,6 +41,7 @@ const MeetingRooms = () => {
       setRooms(data);  // 设置获取到的数据
     } catch (error) {
       setError("Failed to load rooms:"+error);
+      toast.error('加载会议室数据失败');
     }
   };
 
@@ -50,10 +52,17 @@ const MeetingRooms = () => {
   const handleSearchChange = (e) => setSearchTerm(e.target.value);
 
   const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      loadRooms();
+      return;
+    }
     const filteredRooms = rooms.filter((room) =>
       room.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setRooms(filteredRooms);
+    if (filteredRooms.length === 0) {
+      toast.info('未找到匹配的会议室');
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -87,17 +96,24 @@ const MeetingRooms = () => {
   };
 
   const handleSubmit = async () => {
+    if (!formValues.title || !formValues.capacity) {
+      toast.error('请填写会议室名称和容量');
+      return;
+    }
     try {
       let updatedRoom;
       if (editRoom) {
         updatedRoom = await updateRoom(editRoom.id, formValues);
+        toast.success('会议室信息已更新');
       } else {
         updatedRoom = await addRoom(formValues);
+        toast.success('会议室已创建');
       }
       setRooms((prev) => [...prev, updatedRoom]);
       handleDialogClose();
     } catch (error) {
       setError("Failed to save room:"+error);
+      toast.error('保存会议室信息失败');
     }
   };
 
@@ -105,8 +121,10 @@ const MeetingRooms = () => {
     try {
       await deleteRoom(roomId);
       setRooms(rooms.filter((room) => room.id !== roomId));
+      toast.success('会议室已删除');
     } catch (error) {
       setError("Failed to delete room:"+error);
+      toast.error('删除会议室失败');
     }
   };
 

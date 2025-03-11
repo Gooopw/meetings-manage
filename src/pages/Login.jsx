@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TextField, Button, Container, Typography, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import { toast } from 'sonner';
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState("admin");
@@ -13,10 +14,18 @@ const Login = ({ onLogin }) => {
     event.preventDefault();
     // 简单的用户名和密码验证
     if (username === "admin" && password === "123456") {
+      // 存储用户信息
+      const userInfo = {
+        username,
+        role: 'admin',
+        loginTime: new Date().toISOString()
+      };
+      localStorage.setItem("userInfo", JSON.stringify(userInfo));
       onLogin(); // 调用 onLogin 函数来改变登录状态
       navigate("/"); // 登录成功后导航到首页
     } else {
       setError("用户名或密码错误");
+      toast.error('登录失败：用户名或密码错误');
     }
   };
 

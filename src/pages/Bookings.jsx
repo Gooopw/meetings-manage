@@ -1,4 +1,4 @@
-import { useState,useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Tooltip, MenuItem, Select, IconButton } from "@mui/material";
 import AlertBox from "../components/AlertBox";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
@@ -9,6 +9,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { fetchBookings } from "../services/bookingService";
 import { fetchRooms } from "../services/meetingRoomsService";
+import { toast } from 'sonner';
 
 const locales = { "zh-CN": zhCN };
 const localizer = dateFnsLocalizer({
@@ -28,6 +29,8 @@ const Bookings = () => {
   const [newEvent, setNewEvent] = useState({ title: "", start: new Date(), end: new Date(), room: "", description: "" });
   const [filterRoom, setFilterRoom] = useState("");
   const [error, setError] = useState(null);
+  const [view, setView] = useState('month');
+  const [date, setDate] = useState(new Date());
 
   // 获取会议室数据
   const loadRooms = async () => {
@@ -36,6 +39,7 @@ const Bookings = () => {
       setRooms(data);  // 设置获取到的数据
     } catch (error) {
       setError("Failed to load rooms:"+error);
+      toast.error('加载会议室数据失败');
     }
   };
 
@@ -50,6 +54,7 @@ const Bookings = () => {
       setEvents(data);  // 设置获取到的数据
     } catch (error) {
       setError("Failed to load rooms:"+error);
+      toast.error('加载预约数据失败');
     }
   };
 
@@ -71,16 +76,23 @@ const Bookings = () => {
   };
 
   const handleSaveEvent = () => {
+    if (!newEvent.title || !newEvent.room) {
+      toast.error('请填写会议标题和会议室');
+      return;
+    }
     if (editMode) {
       setEvents(events.map(evt => (evt === selectedEvent ? newEvent : evt)));
+      toast.success('预约已更新');
     } else {
       setEvents([...events, newEvent]);
+      toast.success('预约已创建');
     }
     setOpen(false);
   };
 
   const handleDeleteEvent = (eventToDelete) => {
     setEvents(events.filter(event => event !== eventToDelete));
+    toast.success('预约已删除');
   };
 
   const eventStyleGetter = (event) => {
@@ -139,6 +151,14 @@ const Bookings = () => {
     []
   );
 
+  const handleNavigate = useCallback((newDate) => {
+    setDate(newDate);
+  }, []);
+
+  const handleView = useCallback((newView) => {
+    setView(newView);
+  }, []);
+
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -159,23 +179,22 @@ const Bookings = () => {
       <Calendar
         localizer={localizer}
         events={filteredEvents}
-        //eventLimit={3}
         startAccessor="start"
         endAccessor="end"
         messages={messages}
         formats={formats}
         resources={rooms}
-        //resourceIdAccessor="id"
-        //resourceTitleAccessor="name"
         selectable
-        //showMultiDayTimes
-        //dayLayoutAlgorithm="no-overlap"
-        //allDayMaxRows={2}
-        //popup
         style={{ height: 1100 }}
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
         eventPropGetter={eventStyleGetter}
+        view={view}
+        date={date}
+        onView={handleView}
+        onNavigate={handleNavigate}
+        views={['month', 'week', 'day', 'agenda']}
+        //popup
         components={{
           event: ({ event }) => (
             <Tooltip title={`${event.room}: ${event.description}`} arrow>
